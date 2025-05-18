@@ -26,7 +26,8 @@ SECRET_KEY = 'django-insecure-w^c=#jms2q8mb0g!zpzjc0mfoqi+l68bhu3!pg0agkdzbq4!!!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['obuga-production.up.railway.app']
+CSRF_TRUSTED_ORIGINS = [os.getenv('CSRF_TRUSTED_ORIGIN', 'https://obuga-production.up.railway.app')]
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost').split(',')
 
 MESSAGE_TAGS = {messages.ERROR: 'danger',}
 
