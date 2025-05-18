@@ -1,0 +1,212 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mark Attendance</title>
+  <link rel="stylesheet" href="{% static 'attendance/style.css' %}" />
+  <style>
+    body {
+      background: linear-gradient(135deg, #d4f0fc 0%, #f0f9ff 100%);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: white;
+      padding: 2.5rem 3rem;
+      border-radius: 12px;
+      max-width: 450px;
+      width: 100%;
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.07), 0 4px 6px rgba(0, 0, 0, 0.05);
+      text-align: center;
+    }
+
+    h1 {
+      color: #2f855a;
+      margin-bottom: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    label {
+      display: block;
+      text-align: left;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 0.4rem;
+      font-size: 0.95rem;
+    }
+
+    input[type="date"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 12px 14px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 1.5px solid #cbd5e1;
+      margin-bottom: 1.4rem;
+      transition: border-color 0.3s ease;
+      font-family: inherit;
+    }
+
+    input[type="date"]:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #38a169;
+      box-shadow: 0 0 5px #38a169aa;
+    }
+
+    textarea.task-textarea {
+      resize: vertical;
+      min-height: 90px;
+    }
+
+    .button {
+      background-color: #38a169;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 15px 0;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      transition: background-color 0.25s ease;
+    }
+
+    .button:hover {
+      background-color: #2f855a;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-top: 1.8rem;
+      color: #38a169;
+      font-weight: 600;
+      text-decoration: none;
+      font-size: 0.95rem;
+      transition: color 0.3s ease;
+    }
+
+    .back-link:hover {
+      color: #2f855a;
+      text-decoration: underline;
+    }
+
+    .flash-messages {
+      margin-bottom: 1rem;
+    }
+
+    .alert {
+      padding: 10px 15px;
+      border-radius: 6px;
+      margin-bottom: 0.8rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .alert-info {
+      background-color: #e0f2fe;
+      color: #0369a1;
+      border: 1px solid #bae6fd;
+    }
+
+    .alert-success {
+      background-color: #d1fae5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+
+    .alert-error, .alert-danger {
+      background-color: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+  </style>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const dateInput = document.getElementById('date');
+      const form = document.querySelector('form');
+      const errorBox = document.getElementById('date-error');
+
+      const today = new Date();
+      const fiveDaysAgo = new Date(today);
+      fiveDaysAgo.setDate(today.getDate() - 5);
+      const fiveDaysFuture = new Date(today);
+      fiveDaysFuture.setDate(today.getDate() + 5);
+
+      const formatDate = (date) => date.toISOString().split('T')[0];
+
+      // Set min and max on the input to limit date picker selection
+      dateInput.setAttribute('min', formatDate(fiveDaysAgo));
+      dateInput.setAttribute('max', formatDate(fiveDaysFuture));
+
+      form.addEventListener('submit', function (e) {
+        const selectedDate = new Date(dateInput.value);
+        if (selectedDate < fiveDaysAgo || selectedDate > fiveDaysFuture) {
+          e.preventDefault();
+          errorBox.textContent = '❌ Please select a date within 5 days before or after today.';
+          errorBox.style.display = 'block';
+          dateInput.focus();
+        } else {
+          errorBox.style.display = 'none';
+        }
+      });
+    });
+  </script>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Mark Attendance</h1>
+
+    <div id="date-error" class="alert alert-error" style="display: none;"></div>
+
+    <form action="{% url 'submit_attendance' %}" method="POST">
+      {% csrf_token %}
+
+      <label for="date">Select Date</label>
+      <input type="date" id="date" name="date" required />
+
+      <label for="employee_name">Employee Name</label>
+      <select id="employee_name" name="employee_name" required>
+        {% for employee in employees %}
+          <option value="{{ employee.id }}">{{ employee.name }}</option>
+        {% endfor %}
+      </select>
+
+      <label for="attendance_status">Attendance Status</label>
+      <select id="attendance_status" name="attendance_status" required>
+        <option value="" disabled selected>Select Status</option>
+        <option value="Present">Present</option>
+        <option value="Absent">Absent</option>
+        <option value="Unassigned">Unassigned</option>
+      </select>
+
+      <label for="task">Assign Task (Optional)</label>
+      <textarea id="task" name="task" class="task-textarea" placeholder="Enter task details"></textarea>
+
+      {% if messages %}
+        <div class="flash-messages">
+          {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <button type="submit" class="button">Submit Attendance</button>
+    </form>
+
+    <a href="{% url 'home' %}" class="back-link">&larr; Back to Home page</a>
+  </div>
+</body>
+</html>
