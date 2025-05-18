@@ -89,6 +89,7 @@ def show_summary_selector(request):
     # Render the main summary page with buttons
      return render(request, 'attendance/show_summary.html')
 
+@login_required(login_url='login')
 def download_employee_pdf(request):
     # Create the HttpResponse object with PDF headers
     response = HttpResponse(content_type='application/pdf')
@@ -145,11 +146,13 @@ def download_employee_pdf(request):
 
     return response
 
+@login_required(login_url='login')
 def select_attendance(request):
     months = [datetime(2025, i, 1).strftime('%B') for i in range(1, 13)]
     employees = Employee.objects.all()
     return render(request, 'attendance/attendance_selection.html', {'employees': employees, 'months': months})
 
+@login_required(login_url='login')
 def download_attendance_pdf(request):
     employee_id = request.GET.get('employee_id')
     month = request.GET.get('month')
@@ -242,10 +245,12 @@ def download_attendance_pdf(request):
     buffer.seek(0)
     return HttpResponse(buffer, content_type='application/pdf')
  
+@login_required(login_url='login')
 def summary_selection(request):
     # Just render the menu page with buttons
     return render(request, 'attendance/show_summary.html')
 
+@login_required(login_url='login')
 def show_summary(request, summary_type):
     # You can handle logic here based on summary_type (attendance or employeesheet)
     if summary_type == "attendance":
