@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-w^c=#jms2q8mb0g!zpzjc0mfoqi+l68bhu3!pg0agkdzbq4!!!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['obuga-production.up.railway.app']
 
 MESSAGE_TAGS = {messages.ERROR: 'danger',}
 
